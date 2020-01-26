@@ -1,20 +1,42 @@
----
-title: "Report 1"
-output:
-  html_document:
-    df_print: paged
----
+```{r include=FALSE}
+library(dplyr)
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Intro. *Cmd+Shift+Enter*. 
 
-```{r}
 professors <- read.csv("~/Documents/data_course/projects/professors.csv")
 students <- read.csv("~/Documents/data_course/projects/students.csv")
+
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+# Report 1
+## Exercises
+### Part 1
+#### What is the total number of answers obtained from students?
+```{r}
+student_grouped_by_question <- group_by(students, X)
+  student_answers_per_question <- mutate(student_grouped_by_question, answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
+  total_answers_students <- sum(student_answers_per_question["answers"])
+```
+`r total_answers_students`
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+#### What is the total number of answers obtained from professors?
+```{r}
+professor_grouped_by_question <- group_by(professors, X)
+  professor_answers_per_question <- mutate(professor_grouped_by_question, answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
+  total_answers_professor <- sum(professor_answers_per_question["answers"])
+```
+`r total_answers_professor`
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+#### Does each question have the same number of answers?
+```{r}
+
+```
+
+\newpage
+### Part 2
+#### Obtain side-by-side bar charts comparing the distribution of answers of the students versus the professors for each question.
+```{r}
+library(ggplot2)
+
+
+```
 
