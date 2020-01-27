@@ -12,24 +12,41 @@ students <- read.csv("~/Documents/data_course/projects/students.csv")
 ### Part 1
 #### What is the total number of answers obtained from students?
 ```{r}
-student_grouped_by_question <- group_by(students, X)
-  student_answers_per_question <- mutate(student_grouped_by_question, answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
-  total_answers_students <- sum(student_answers_per_question["answers"])
+student_answers_per_question <-
+students %>%
+group_by(X) %>%
+mutate(answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
+total_answers_students <- sum(student_answers_per_question["answers"])
 ```
-`r total_answers_students`
+`r total_answers_students` is the total number of answers obtained from students.
 
 #### What is the total number of answers obtained from professors?
 ```{r}
-professor_grouped_by_question <- group_by(professors, X)
-  professor_answers_per_question <- mutate(professor_grouped_by_question, answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
-  total_answers_professor <- sum(professor_answers_per_question["answers"])
+professor_answers_per_question <-
+professors %>%
+group_by(X) %>%
+mutate(answers = sum(Totally.Disagree, Totally.agree, Agree, Disagree))
+total_answers_professors <- sum(professor_answers_per_question["answers"])
+
 ```
-`r total_answers_professor`
+`r total_answers_professors` is the total number of answers obtained from professors.
 
 #### Does each question have the same number of answers?
 ```{r}
 
+deviation_students <- 
+student_answers_per_question %>%
+  ungroup %>%
+  pull(answers) %>%
+  sd 
+
+deviation_professors <- 
+professor_answers_per_question %>%
+  ungroup %>%
+  pull(answers) %>%
+  sd
 ```
+As the deviation is not equal 0 (it is `r round(deviation_students, 3)` for students/`r round(deviation_professors, 3)` for professors) therefore not all questions have the same number of answers.
 
 \newpage
 ### Part 2
