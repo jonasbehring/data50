@@ -76,8 +76,6 @@ professors_visualize <- mutate(to_visualize, who = "professors")
 
 bound_data <-bind_rows(students_visualize, professors_visualize)
 
-bound_data
-
   ggplot(data= bound_data, 
        mapping=aes(x=type_of_response, 
                    y=answers,
@@ -88,5 +86,31 @@ bound_data
        x="type_of_response", y="count_of_response") +
   facet_wrap(~X) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+\newpage
+### Part 3
+#### The most appropriate measure of central tendency is the mode. Compute the mode for the students and professors for each of the questions.
+```{r}
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+students_mode <-
+students %>%
+  group_by(X) %>%
+  mutate(mode=Mode(c(Totally.agree, Agree, Disagree, Totally.Disagree)))
+
+students_mode
+
+professors_mode <-
+students %>%
+  group_by(X) %>%
+  mutate(mode=Mode(c(Totally.agree, Agree, Disagree, Totally.Disagree)))
+
+professors_mode
 
 ```
