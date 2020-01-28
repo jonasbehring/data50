@@ -83,7 +83,7 @@ bound_data <-bind_rows(students_visualize, professors_visualize)
   geom_bar(stat="identity", position = "dodge") + 
   labs(title="My side-by-side facet chart",
        subtitle="Using facet to show each questions",
-       x="type_of_response", y="count_of_response") +
+       x="type of response", y="count of response") +
   facet_wrap(~X) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
