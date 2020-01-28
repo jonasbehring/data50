@@ -11,17 +11,27 @@ survey_data <- read.csv("~/Documents/data_course/projects/survey.csv")
 ### Part 1
 #### How many survey participants were there?
 ```{r}
-survey_data
+number_of_participants <-
+survey_data %>%
+  summarise(sum_participants = sum(Number.of.employees))
 ```
-`r total_answers_students` is the total number of answers obtained from students.
+There were `r number_of_participants` participants.
 
 #### What are the data types of each column?
 ```{r}
-
+tail(survey_data, 1)
 ```
+All numbers (X, Number of employees, number of PhD students, nunber of postdocs, number of professors are integer.
+
+University, position and sizes are strings.
 
 #### What are the top 3 universities with the most survey participants?
 ```{r}
-
+top_3_by_participants <-
+survey_data %>%
+  arrange(desc(Number.of.employees)) %>%
+  slice(1:3) %>%
+  select(University, Number.of.employees)
+top_3_by_participants
 ```
-
+University of Groningen, Leiden University and Delft University of Technology are the top 3 universities with the most survey participants.
