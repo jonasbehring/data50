@@ -35,3 +35,20 @@ survey_data %>%
 top_3_by_participants
 ```
 University of Groningen, Leiden University and Delft University of Technology are the top 3 universities with the most survey participants.
+
+### Part 2
+#### Obtain a horizontal bar graph of the number of survey participants for the different positions given in the column Position
+```{r}
+library(ggplot2)
+
+no_of_servey_participants_by_position <- 
+survey_data %>%
+  group_by(Position) %>%
+  summarise(sum = sum(Number.of.employees)) %>%
+
+ggplot(data=no_of_servey_participants_by_position, 
+       mapping=aes(y=sum, x=Position)) + 
+  geom_bar(stat="identity") + 
+  labs(title="Number of survey participants for the different positions") +
+  coord_flip()
+```
