@@ -52,8 +52,41 @@ As the deviation is not equal 0 (it is `r round(deviation_students, 3)` for stud
 ### Part 2
 #### Obtain side-by-side bar charts comparing the distribution of answers of the students versus the professors for each question.
 ```{r}
-library(ggplot2)
 
+library(ggplot2)
+library(tidyr)
+
+to_visualize <-
+students %>%
+  gather(
+    key = "type_of_response",
+    value = "answers",
+    Totally.agree, Agree, Disagree, Totally.Disagree)
+
+students_visualize <- mutate(to_visualize, who = "students") 
+
+to_visualize <-
+professors %>%
+  gather(
+    key = "type_of_response",
+    value = "answers",
+    Totally.agree, Agree, Disagree, Totally.Disagree)
+
+professors_visualize <- mutate(to_visualize, who = "professors") 
+
+bound_data <-bind_rows(students_visualize, professors_visualize)
+
+bound_data
+
+  ggplot(data= bound_data, 
+       mapping=aes(x=type_of_response, 
+                   y=answers,
+                   color=who)) + 
+  geom_bar(stat="identity", position = "dodge") + 
+  labs(title="My side-by-side facet chart",
+       subtitle="Using facet to show each questions",
+       x="type_of_response", y="count_of_response") +
+  facet_wrap(~X) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
-
