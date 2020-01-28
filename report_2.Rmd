@@ -45,10 +45,45 @@ no_of_servey_participants_by_position <-
 survey_data %>%
   group_by(Position) %>%
   summarise(sum = sum(Number.of.employees)) %>%
+  arrange(desc(sum))
 
 ggplot(data=no_of_servey_participants_by_position, 
        mapping=aes(y=sum, x=Position)) + 
   geom_bar(stat="identity") + 
-  labs(title="Number of survey participants for the different positions") +
+  labs(title="Number of survey participants for the different positions",
+       x="Position", y="Number of survey participants") +
+  coord_flip()
+```
+
+### Part 3
+There is a column (named Sizes) in the dataset that is supposed to group the data in the column Number of employees in the following bins:
+
+Small (0 to 10)
+Medium (11 to 20)
+Large (21 to 100)
+Extra large (over 100)
+Unfortunately, somebody made mistakes in that column…
+
+Recreate this column correctly, then plot a bar chart with {ggplot2} of the number of values in each of the bins.
+```{r}
+corrected_data <-
+survey_data %>%
+  mutate(Sizes= case_when(
+    Number.of.employees <= 10 ~ "Small (0 to 10)",
+    Number.of.employees <= 20 ~ "Medium (11 to 20)",
+    Number.of.employees <= 100 ~ "Large (21 to 100)",
+    TRUE ~ "Extra large (over 100)"
+  ))
+
+distribution_of_sizes <-
+corrected_data %>%
+  group_by(Sizes) %>% 
+  tally()
+
+ggplot(data=distribution_of_sizes, 
+       mapping=aes(y=n, x=Sizes)) + 
+  geom_bar(stat="identity") + 
+  labs(title="Number of values in each of the bins",
+       x="Sizes", y="Number of employees") +
   coord_flip()
 ```
