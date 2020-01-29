@@ -1,0 +1,21 @@
+```{r include=FALSE}
+library(dplyr)
+library(DBI)
+library(purrr)
+
+politicians_db <- dbConnect(RSQLite::SQLite(), "zh_politicians.db")
+
+dbListTables(politicians_db) 
+
+# Only close connection when you don't need to talk to the database anymore
+# (usually toward the end of your script)
+
+dbDisconnect(politicians_db)
+
+```
+
+# Report 3
+## Exercises
+### Part 1
+#### How many survey participants were there?
+
