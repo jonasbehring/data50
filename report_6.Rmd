@@ -1,6 +1,9 @@
 ```{r include=FALSE}
-library(dplyr)
-
+library(readxl)
+athletes <- read_excel("olympics.xlsx", sheet = "athletes")
+country <- read_excel("olympics.xlsx", sheet = "country")
+games <- read_excel("olympics.xlsx", sheet = "games")
+medals <- read_excel("olympics.xlsx", sheet = "medals")
 
 
 
