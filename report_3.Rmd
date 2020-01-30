@@ -9,13 +9,7 @@ addresses_tbl <- tbl(politicians_db, "Addresses")
 affilations_tbl <- tbl(politicians_db, "Affiliations")
 mandates_tbl <- tbl(politicians_db, "Mandates")
 persons_tbl <- tbl(politicians_db, "Persons")
-```
 
-# Report 3
-## Exercises
-### Part 1
-#### How many survey participants were there?
-```{r}
 library(lubridate)
 library(janitor)
 
@@ -23,17 +17,30 @@ mandates <-
 mandates_tbl%>%
   collect
 
-mandates_with_dates <-
+
+
+```
+
+# Report 3
+## Exercises
+### Part 1
+#### How many survey participants were there?
+```{r}
+
+jim <-
 mandates %>%
   filter(MANDATE_START_DAY > 0) %>%
-  mutate(startdate = make_date(MANDATE_START_YEAR, MANDATE_START_MONTH, MANDATE_START_DAY),
-         enddate = case_when(
+  mutate(StartDate = make_date(MANDATE_START_YEAR, MANDATE_START_MONTH, MANDATE_START_DAY),
+         EndDate = case_when(
          MANDATE_END_YEAR==0 ~ Sys.Date(),
          TRUE ~ make_date(MANDATE_END_YEAR, MANDATE_END_MONTH, MANDATE_END_DAY))) %>%
-    arrange(desc(enddate))
+  as.data.frame()
 
-head(mandates_filtered)
-  
+ed <- data.frame(rng = seq(min(jim$StartDate), max(jim$EndDate), by = 'year'))
+merge(jim, ed, all=TRUE) %>%
+  filter(rng >= StartDate, rng <= EndDate) %>%
+  group_by(rng) %>%
+  summarise(n())
 
 
 ```
