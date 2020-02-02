@@ -39,3 +39,29 @@ country %>%
   arrange(desc(participations))
 max_participations
 ```
+
+### Part 3
+#### What athlete(s) kept a Gold medal for the longest time?
+```{r}
+analysis <-
+medals %>%
+  filter(Medal == "Gold") %>%
+  group_by(Event, athlete_id) %>%
+  summarise(gold_medals_per_athlete_event = n()) %>%
+  arrange(desc(gold_medals_per_athlete_event)) %>%
+  ungroup()
+analysis
+```
+
+### Part 4
+#### What country(ies) kept a Gold medal for the longest time?
+
+```{r}
+analysis <-
+medals %>%
+  filter(Medal == "Gold") %>%
+  group_by(Event, Team) %>%
+  summarise(gold_medals_per_country_event = n()) %>%
+  arrange(desc(gold_medals_per_country_event)) 
+analysis
+```
