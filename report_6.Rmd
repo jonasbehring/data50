@@ -18,15 +18,16 @@ medals <- read_excel("olympics.xlsx", sheet = "medals")
 summary_athletes <-
 country %>%
   group_by(athlete_id) %>%
-  mutate(n = n(),)%>%
-  arrange(desc(n))%>%
-  ungroup()
+  mutate(n = n(),
+         differnet_countries = n_distinct(NOC)) %>%
+  arrange(desc(differnet_countries)) %>%
+  ungroup
 summary_athletes
 ```
-There are athletes who participated for different countries (e.g. 65378 --> URS and LAT)
+There are several athletes who have competed for different countries.
 
 
-### Part 1
+### Part 2
 #### Who are the ten athletes that took part in most games?
 ```{r}
 
