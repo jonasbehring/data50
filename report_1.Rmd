@@ -81,11 +81,12 @@ bound_data <-bind_rows(students_visualize, professors_visualize)
                    y=answers,
                    color=who)) + 
   geom_bar(stat="identity", position = "dodge") + 
+  scale_x_discrete(labels = c("Totally.agree", "Agree", "Disagree", "Totally.disagree")) +
   labs(title="My side-by-side facet chart",
        subtitle="Using facet to show each questions",
        x="type of response", y="count of response") +
   facet_wrap(~X) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
 ```
 
@@ -107,7 +108,7 @@ students %>%
 students_mode
 
 professors_mode <-
-students %>%
+professors %>%
   group_by(X) %>%
   mutate(mode=Mode(c(Totally.agree, Agree, Disagree, Totally.Disagree)))
 
