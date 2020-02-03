@@ -61,7 +61,23 @@ analysis <-
 medals %>%
   filter(Medal == "Gold") %>%
   group_by(Event, Team) %>%
-  summarise(gold_medals_per_country_event = n()) %>%
+  mutate(gold_medals_per_country_event = n()) %>%
   arrange(desc(gold_medals_per_country_event)) 
 analysis
 ```
+
+### Part 4
+#### Who are the ten athletes that competed in the most events (some athletes take part in more than one event during games) ?
+
+```{r}
+analysis <-
+medals %>%
+  group_by(athlete_id) %>%
+  summarise(different_events = n_distinct(Event)) %>%
+  arrange(desc(different_events)) %>%
+  top_n(10)
+analysis
+```
+
+
+
