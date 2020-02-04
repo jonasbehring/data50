@@ -75,9 +75,33 @@ unnest(mandates_with_names, active_years) %>%
   summarise(sum = n())
 
 ggplot(data = unnested_data, 
-       mapping=aes(x=years, y=sum, color=GENDER)) + 
+       mapping=aes(x=active_years, y=sum, color=GENDER)) + 
   geom_line() + 
-  labs(title="Number of active mandats per year") +
+  labs(title="Number of active mandats per year by assembly",
+       x="years", y="n") +
+  facet_wrap(~ASSEMBLY)
+
+```
+
+
+### Part 3
+#### Create a new plot showing the proportion of elected politicians from each party in year 2000. You want to show this by assembly, so use one facet with one pie chart per assembly.
+
+```{r}
+
+mandates_with_names <- left_join(mandates, persons, by = c("PERSON_ID" = "ID"))
+
+unnested_data <-
+unnest(mandates_with_names, active_years) %>%
+  group_by(active_years, ASSEMBLY, GENDER) %>%
+  filter(GENDER != "") %>%
+  summarise(sum = n())
+
+ggplot(data = unnested_data, 
+       mapping=aes(x=active_years, y=sum, color=GENDER)) + 
+  geom_line() + 
+  labs(title="Number of active mandats per year by assembly",
+       x="years", y="n") +
   facet_wrap(~ASSEMBLY)
 
 ```
