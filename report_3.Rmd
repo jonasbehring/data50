@@ -2,6 +2,7 @@
 library(dplyr)
 library(DBI)
 library(purrr)
+library(tidyverse)
 
 politicians_db <- dbConnect(RSQLite::SQLite(), "zh_politicians.db")
 
@@ -31,17 +32,17 @@ jim <-
 mandates %>%
   filter(MANDATE_START_DAY > 0) %>%
   mutate(StartDate = make_date(MANDATE_START_YEAR, MANDATE_START_MONTH, MANDATE_START_DAY),
-         EndDate = case_when(
-         MANDATE_END_YEAR==0 ~ Sys.Date(),
-         TRUE ~ make_date(MANDATE_END_YEAR, MANDATE_END_MONTH, MANDATE_END_DAY))) %>%
-  as.data.frame()
-
-ed <- data.frame(rng = seq(min(jim$StartDate), max(jim$EndDate), by = 'year'))
-merge(jim, ed, all=TRUE) %>%
-  filter(rng >= StartDate, rng <= EndDate) %>%
-  group_by(rng) %>%
-  summarise(n())
-
+         MANDATE_END_YEAR = case_when(
+         MANDATE_END_YEAR==0 ~ as.integer(format(Sys.Date(),'%Y')),
+         TRUE ~ MANDATE_END_YEAR),
+         MANDATE_END_MONTH = case_when(
+         MANDATE_END_MONTH==0 ~ as.integer(format(Sys.Date(),'%m')),
+         TRUE ~ MANDATE_END_MONTH),
+         MANDATE_END_DAY = case_when(
+         MANDATE_END_DAY==0 ~ as.integer(format(Sys.Date(),'%d')),
+         TRUE ~ MANDATE_END_DAY),
+         active_years = map2(MANDATE_START_YEAR, MANDATE_END_YEAR, seq))
+jim
 
 ```
 
