@@ -20,8 +20,7 @@ country %>%
   group_by(athlete_id) %>%
   mutate(n = n(),
          differnet_countries = n_distinct(NOC)) %>%
-  arrange(desc(differnet_countries)) %>%
-  ungroup
+  arrange(desc(differnet_countries)) 
 summary_athletes
 ```
 There are several athletes who have competed for different countries.
@@ -38,6 +37,9 @@ country %>%
   top_n(10) %>%
   arrange(desc(participations))
 max_participations
+left_join(max_participations, athletes, by = c("athlete_id" = "ID")) %>%
+  select(Name, participations)
+
 ```
 
 ### Part 3

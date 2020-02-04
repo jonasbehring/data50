@@ -22,6 +22,10 @@ persons <-
 persons_tbl %>%
   collect 
 
+affilations <-
+affilations_tbl %>%
+  collect
+
 ```
 
 # Report 3
@@ -89,20 +93,15 @@ ggplot(data = unnested_data,
 
 ```{r}
 
-mandates_with_names <- left_join(mandates, persons, by = c("PERSON_ID" = "ID"))
-
-unnested_data <-
-unnest(mandates_with_names, active_years) %>%
-  group_by(active_years, ASSEMBLY, GENDER) %>%
-  filter(GENDER != "") %>%
+politicians_in_2000 <-
+unnest(mandates, active_years) %>%
+  filter(active_years == 2000)%>%
+  left_join(affilations, by = c("ID" = "MANDATE_ID")) %>%
+  select(PARTY, ASSEMBLY) %>%
+  group_by(PARTY, ASSEMBLY) %>%
   summarise(sum = n())
 
-ggplot(data = unnested_data, 
-       mapping=aes(x=active_years, y=sum, color=GENDER)) + 
-  geom_line() + 
-  labs(title="Number of active mandats per year by assembly",
-       x="years", y="n") +
-  facet_wrap(~ASSEMBLY)
+ 
 
 ```
 
