@@ -62,9 +62,11 @@ analysis
 analysis <-
 medals %>%
   filter(Medal == "Gold") %>%
-  group_by(Event, Team) %>%
-  mutate(gold_medals_per_country_event = n()) %>%
-  arrange(desc(gold_medals_per_country_event)) 
+  group_by(Event) %>%
+  arrange(Event) %>%
+  mutate(test = "test")
+  #mutate(gold_medals_per_country_event = n()) %>%
+  #arrange(desc(gold_medals_per_country_event)) 
 analysis
 ```
 
@@ -77,7 +79,9 @@ medals %>%
   group_by(athlete_id) %>%
   summarise(different_events = n_distinct(Event)) %>%
   arrange(desc(different_events)) %>%
-  top_n(10)
+  top_n(10) %>%
+  left_join(athletes, by = c("athlete_id" = "ID")) %>%
+  select(Name, different_events)
 analysis
 ```
 
