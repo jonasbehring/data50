@@ -1,11 +1,3 @@
-```{r include=FALSE}
-library(dplyr)
-
-
-
-
-```
-
 # Report 4
 ## Exercises
 ### Part 1
@@ -17,6 +9,8 @@ library(rvest)
 library(textclean)
 library(lubridate)
 library(concatenate)
+library(stringr)
+library(dplyr)
 
 page_html <- xml2::read_html("https://epfl-exts.github.io/rental-scrape/")
 
@@ -30,13 +24,11 @@ object_type <- page_html %>%
 
 rooms <- page_html %>%
   rvest::html_nodes(css = ".rooms strong") %>%
-  rvest::html_text() %>%
-  as.integer()
+  rvest::html_text() 
 
 price <- page_html %>%
   rvest::html_nodes(css = ".float-right strong") %>%
-  rvest::html_text() %>%
-  as.integer()
+  rvest::html_text() 
 
 address <- page_html %>%
   rvest::html_nodes(css = ".address p") %>%
@@ -45,12 +37,11 @@ address <- page_html %>%
 living_space <- page_html %>%
   rvest::html_nodes(css = ".living-space strong") %>%
   rvest::html_text() %>%
-  numextract
- 
+  numextract 
+
 floor <- page_html %>%
   rvest::html_nodes(css = ".floor strong") %>%
-  rvest::html_text() %>%
-  as.integer()
+  rvest::html_text() 
 
 usable_surface <- page_html %>%
   rvest::html_nodes(css = ".usable-surface strong") %>%
@@ -59,11 +50,83 @@ usable_surface <- page_html %>%
 
 availability <- page_html %>%
   rvest::html_nodes(css = ".availability strong") %>%
-  rvest::html_text() %>%
-  dmy()
-  
-test <- cbind(object_type, rooms)
-                        
-test
+  rvest::html_text() 
+
+rentals <-
+  as_tibble(cbind(object_type, rooms, price, address, living_space, floor, usable_surface, availability)) %>%
+  mutate(rooms = as.integer(rooms),
+         price = as.integer(price),
+         living_space = as.integer(living_space),
+         floor = as.integer(floor),
+         usable_surface = as.integer(usable_surface),
+         availability = dmy(availability),
+         postcode = as.integer(str_extract(address, "\\d{4}")))
+
+```
+
+### Part 2
+#### Create a scatterplot showing how price evolves with living space of the flat.
+
+```{r}
+library(ggplot2)
+rentals_scatterplot <-
+  rentals %>%
+  filter(!is.na(price) & !is.na(living_space))
+
+ggplot(rentals_scatterplot, aes(x=living_space, y=price)) + 
+  geom_point(alpha=0.5) +
+  labs(title="How the price evolves with living space",
+       x="living space in m2", y="price in CHF") 
+
+```
+
+### Part 3
+#### Create a bar plot showing the number of properties by postcode. Is this agency more "active" in certain areas?
+
+```{r}
+library(ggplot2)
+
+by_postcode <-
+rentals %>%
+  group_by(postcode) %>%
+  summarise(sum = n()) %>%
+  arrange(desc(sum))
+
+ggplot(data=by_postcode, 
+       mapping=aes(x=postcode, y=sum)) + 
+  geom_bar(stat="identity") + 
+  labs(title="Number of rentals by postcode",
+       x="rentals", y="postcode") 
+
+
+```
+
+Yes. They are more active in certain areas.
+
+### Part 4
+#### Create a more complex scatterplot, showing how price evolves with living space of the flat by postcode and by floor. You can use colors and/or facets to make the categories visible.
+
+```{r}
+rentals_scatterplot <-
+  rentals %>%
+  filter(!is.na(price) & !is.na(living_space) & floor > 0 & floor < 7)
+
+
+ggplot(rentals_scatterplot, aes(x=living_space, y=price, color=postcode)) + 
+  geom_point(alpha=0.5, size=3) +
+  labs(title="How the price evolves with living space",
+       x="living space in m2", y="price in CHF") +
+  facet_wrap(~floor) +
+  theme(legend.position = "none")
+
+```
+
+### Part 5
+#### Can you see any trends for listings with addresses only available on demand? Are they more expensive or less? Bigger living space? Higher floor? Keep in mind that boxplot/violin plots work really well to compare distributions of values between groups!
+```{r}
+
+rentals %>%
+  filter(str_detect(address, "Address on request") |   str_detect(address, "sur demande"))
+
 
 ```
