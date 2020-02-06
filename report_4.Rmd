@@ -9,4 +9,61 @@ library(dplyr)
 # Report 4
 ## Exercises
 ### Part 1
-#### ??
+#### Get the full dataset out of the site. Your code should end up with a tibble of a bit more than 600 rows and 9 columns. Make sure you take the time to convert each columns to the right type and not all character
+
+```{r}
+library(xml2)
+library(rvest)
+library(textclean)
+library(lubridate)
+library(concatenate)
+
+page_html <- xml2::read_html("https://epfl-exts.github.io/rental-scrape/")
+
+numextract <- function(string){ 
+  str_extract(string, "\\-*\\d+\\.*\\d*")
+} 
+
+object_type <- page_html %>%
+  rvest::html_nodes(css = ".object-type") %>%
+  rvest::html_text()
+
+rooms <- page_html %>%
+  rvest::html_nodes(css = ".rooms strong") %>%
+  rvest::html_text() %>%
+  as.integer()
+
+price <- page_html %>%
+  rvest::html_nodes(css = ".float-right strong") %>%
+  rvest::html_text() %>%
+  as.integer()
+
+address <- page_html %>%
+  rvest::html_nodes(css = ".address p") %>%
+  rvest::html_text() 
+
+living_space <- page_html %>%
+  rvest::html_nodes(css = ".living-space strong") %>%
+  rvest::html_text() %>%
+  numextract
+ 
+floor <- page_html %>%
+  rvest::html_nodes(css = ".floor strong") %>%
+  rvest::html_text() %>%
+  as.integer()
+
+usable_surface <- page_html %>%
+  rvest::html_nodes(css = ".usable-surface strong") %>%
+  rvest::html_text() %>%
+  numextract
+
+availability <- page_html %>%
+  rvest::html_nodes(css = ".availability strong") %>%
+  rvest::html_text() %>%
+  dmy()
+  
+test <- cbind(object_type, rooms)
+                        
+test
+
+```
