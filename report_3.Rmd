@@ -26,6 +26,10 @@ affilations <-
 affilations_tbl %>%
   collect
 
+addresses <- 
+addresses_tbl %>%
+  collect
+
 ```
 
 # Report 3
@@ -47,6 +51,7 @@ mandates %>%
          MANDATE_END_DAY = case_when(
          MANDATE_END_DAY==0 ~ as.integer(format(Sys.Date(),'%d')),
          TRUE ~ MANDATE_END_DAY),
+         EndDate = make_date(MANDATE_END_YEAR, MANDATE_END_MONTH, MANDATE_END_DAY),
          active_years = map2(MANDATE_START_YEAR, MANDATE_END_YEAR, seq)) 
   
 unnested_data <-
@@ -95,14 +100,165 @@ ggplot(data = unnested_data,
 
 politicians_in_2000 <-
 unnest(mandates, active_years) %>%
-  filter(active_years == 2000)%>%
+  filter(active_years == 2000) %>%
   left_join(affilations, by = c("ID" = "MANDATE_ID")) %>%
   select(PARTY, ASSEMBLY) %>%
   group_by(PARTY, ASSEMBLY) %>%
   summarise(sum = n())
 
- 
 
+```
+
+### Part 4
+#### Have another look at the composition of the assemblies: this time use a line chart to show how it changed over the years. (parlement composition for each year with the number of representative by affiliation)
+
+```{r}
+
+part4 <-
+affilations %>%
+  filter(PERSON_ID > 0 & AFFILIATION_START_YEAR > 0 & AFFILIATION_END_YEAR < 2021) %>%
+    mutate(AFFILIATION_END_YEAR = case_when(
+         AFFILIATION_END_YEAR==0 ~ as.integer(format(Sys.Date(),'%Y')),
+         TRUE ~ AFFILIATION_END_YEAR),
+         active_years = map2(AFFILIATION_START_YEAR, AFFILIATION_END_YEAR, seq)) %>%
+    left_join(mandates, by = c("MANDATE_ID" = "ID"))
+
+unnested_data <-
+unnest(part4, active_years.x) %>%
+  group_by(active_years.x, ASSEMBLY) %>%
+  summarise(sum = n())
+
+ggplot(unnested_data, aes(x=active_years.x, y=sum, color=ASSEMBLY)) +
+  geom_line(aes(linetype=ASSEMBLY))+
+  facet_wrap(~ASSEMBLY)+ 
+  theme(legend.position = "none")
+
+```
+
+### Part 5
+#### For the politicians that have a YEAR_OF_DEATH in the data, find the average life span. Does it change if you go by a TITLE? Use a plot to show the difference (or its absence).
+
+
+```{r}
+
+persons_age <-
+persons %>%
+  mutate(YEAR_OF_BIRTH = as.integer(YEAR_OF_BIRTH),
+         YEAR_OF_DEATH = as.integer(YEAR_OF_DEATH)) %>%
+  filter(YEAR_OF_BIRTH > 0 & !is.na(YEAR_OF_DEATH)) %>%
+  mutate(life_span = YEAR_OF_DEATH - YEAR_OF_BIRTH)  %>%
+  filter(life_span > 20 & life_span < 120)
+
+avg_overall <-
+persons_age %>%
+  summarise(avg_life_span = round(mean(life_span),1))
+
+avg_by_title <-
+persons_age %>%
+  group_by(TITLE) %>%
+  summarise(avg_life_span = mean(life_span)) %>%
+  arrange(avg_life_span) 
+  
+avg_overall
+avg_by_title
+
+```
+
+### Part 6
+#### Which politicians have had the most mandates? Create a top 10 horizontal bar chart.
+
+
+```{r}
+
+library(stringr)
+
+max_mandates <-
+mandates %>%
+  group_by(PERSON_ID) %>%
+  summarise(sum = n()) %>%
+  arrange(desc(sum)) %>%
+  top_n(10) %>%
+  left_join(persons, by = c("PERSON_ID" = "ID")) %>%
+  select(FIRSTNAME, LASTNAME, sum) %>%
+  mutate(name = stringr::str_glue("{FIRSTNAME} {LASTNAME}"))
+
+ggplot(data= max_mandates, 
+       mapping=aes(x=name, 
+                   y=sum)) + 
+  geom_bar(stat="identity", position = "dodge") + 
+  coord_flip() +
+  labs(title="Politicians with most mandates",
+       x="sum of mandates")
+
+```
+
+### Part 7
+#### Do some politicians have multiple mandates at the same time?
+
+
+```{r}
+
+
+
+  
+
+```
+
+### Part 8
+#### Have some politicians been affiliated to different parties over the years?
+
+```{r}
+
+politicians_more_than_one_party <-
+affilations %>%
+  group_by(PERSON_ID, PARTY) %>%
+  summarise(sum = n()) %>%
+  arrange(desc(sum)) %>%
+  filter(sum > 1) %>%
+  nrow()
+politicians_more_than_one_party
+```
+`r politicians_more_than_one_party` politicians have been affiliated to more than one party
+
+### Part 9
+#### Take a sample of 20 politicians with a listed address and plot them on a {leaflet} map. You will need to use an API that converts the addresses to geocoordinates.
+
+```{r}
+library(leaflet)
+library(httr)
+library(purrr)
+library(leaflet)
+
+
+
+addresses_part9 <-
+addresses %>%
+  filter(!is.na(STREET) & HOUSE_NUMBER > 0 & POSTAL_CODE > 0) %>%
+  mutate(POSTAL_CODE = str_extract(POSTAL_CODE, "\\d{4}"),
+    address = str_glue("{STREET}+{HOUSE_NUMBER}+{POSTAL_CODE}+{CITY}")) %>%
+  head(20) 
+
+
+
+geolocations <-
+str_glue("https://geocode.xyz/{addresses_part9$address}?json=1") %>%
+  map(httr::GET) %>%
+  map(content, as = "parsed") 
+
+longt <- map(geolocations, pluck, "longt")
+latt <- map(geolocations, pluck, "latt")
+
+cords <-
+  as_tibble(cbind(longt, latt)) %>%
+  mutate(longt = as.double(longt),
+         latt = as.double(latt)) 
+
+cords %>%
+  leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lng=~longt,lat=~latt)
+         
+  
 ```
 
 {r include=FALSE}
