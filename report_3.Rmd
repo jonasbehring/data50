@@ -198,11 +198,20 @@ ggplot(data= max_mandates,
 
 ```{r}
 
+active_mandates_per_person <-
+unnest(mandates, active_years) %>%
+  group_by(PERSON_ID, active_years) %>%
+  mutate(sum = n()) %>%
+  filter(sum >= 2) %>%
+  top_n(30) %>%
+  arrange(desc(sum)) %>%
+  left_join(persons, by = c("PERSON_ID" = "ID")) %>%
+  select(PERSON_ID, FIRSTNAME, LASTNAME, ASSEMBLY, StartDate, EndDate, sum, active_years) 
 
-
-  
 
 ```
+
+There were politicians who had multiple mandates at the same time. For example Johann Jakob	Fierz in 1838.
 
 ### Part 8
 #### Have some politicians been affiliated to different parties over the years?
