@@ -87,3 +87,13 @@ ggplot(data=distribution_of_sizes,
        x="Sizes", y="Number of employees") +
   coord_flip()
 ```
+
+### Part 4
+Obtain a stacked horizontal bar plot with {ggplot2} that gives the percentage of employees that are Ph.D. students, postdocs and professors for each research group. 
+
+```{r}
+
+  
+
+
+```
