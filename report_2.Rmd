@@ -13,7 +13,7 @@ survey_data <- read.csv("~/Documents/data_course/projects/survey.csv")
 ```{r}
 number_of_participants <-
 survey_data %>%
-  summarise(sum_participants = sum(Number.of.employees))
+  nrow()
 ```
 There were `r number_of_participants` participants.
 
@@ -93,7 +93,19 @@ Obtain a stacked horizontal bar plot with {ggplot2} that gives the percentage of
 
 ```{r}
 
-  
+percentages <-
+corrected_data %>%
+  mutate(
+    Percentage.students=100/Number.of.employees*Number.of.PhD.students,
+    Percentage.postdocs=100/Number.of.employees*Number.of.postdocs,
+    Percentage.professors=100/Number.of.employees*Number.of.professors)))
+
+
+ggplot(data=percentages, 
+       mapping=aes(y=percentages_split, x=X)) + 
+geom_bar(aes(fill = drv), position = position_stack(reverse = TRUE)) +
+ coord_flip() +
+ theme(legend.position = "top")
 
 
 ```
