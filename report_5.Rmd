@@ -1,12 +1,108 @@
 ```{r include=FALSE}
 library(dplyr)
 
-
-
-
 ```
 
 # Report 5
 ## Exercises
 ### Part 1
-#### ??
+#### Try to send a GET request to some of the example queries and inspect the result. Inspired just by these examples, how would create new requests:   
+##### What are the highest grossing dramas from 2010?
+
+```{r}
+library(httr)
+library(purrr)
+#/discover/movie?primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22
+
+
+#/discover/movie?with_genres=18&sort_by=vote_average.desc&vote_count.gte=10
+movies <- 
+httr::GET("https://api.themoviedb.org/3/discover/movie?primary_release_year=2010&with_genres=18&sort_by=vote_average.desc&api_key=d436f8d39c81d5168448fed8476d32b2") %>%
+  httr::content() %>%
+  pluck("results") %>%
+  map(pluck("title")) 
+
+movies
+
+```
+
+##### Have Will Ferrell and Liam Neeson even been in a movie together?
+
+```{r}
+
+library(stringr)
+
+#https://api.themoviedb.org/3/search/person?api_key=[MY_KEY]&language=en-US&query=Orson%20Welles&page=1
+
+ferrel_id <-
+httr::GET("https://api.themoviedb.org/3/search/person?api_key=d436f8d39c81d5168448fed8476d32b2&language=en-US&query=Will%20Ferrell&page=1") %>%
+  httr::content() %>%
+  pluck("results", 1, "id")
+
+neeson_id <-
+httr::GET("https://api.themoviedb.org/3/search/person?api_key=d436f8d39c81d5168448fed8476d32b2&language=en-US&query=Liam%20Neeson&page=1") %>%
+  httr::content() %>%
+  pluck("results", 1, "id")
+
+url <- str_glue("https://api.themoviedb.org/3/discover/movie?api_key=d436f8d39c81d5168448fed8476d32b2&with_people={ferrel_id},{neeson_id}&sort_by=vote_average.desc")
+
+movies_duo <-
+  httr::GET(url) %>%
+  httr::content() %>%
+  pluck("results") %>%
+  map(pluck("title"))
+
+movies_duo
+```
+
+##### Can you find kids movies with Tom Cruise in it?
+
+```{r}
+
+cruise_id <-
+httr::GET("https://api.themoviedb.org/3/search/person?api_key=d436f8d39c81d5168448fed8476d32b2&language=en-US&query=tom%20cruise&page=1") %>%
+  httr::content() %>%
+  pluck("results", 1, "id")
+
+httr::GET(str_glue("https://api.themoviedb.org/3/discover/movie?api_key=d436f8d39c81d5168448fed8476d32b2&with_people={cruise_id}&with_genres=16")) %>%
+  httr::content() 
+
+```
+
+I cannot find any.
+
+
+#### Part 2
+##### From RStudio, what query would you make to find the id of the animation movies company "Pixar"? Show both the query and how you extract the id from the result in your report.
+
+```{r}
+
+pixar_ids <-
+httr::GET("https://api.themoviedb.org/3/search/company?api_key=d436f8d39c81d5168448fed8476d32b2&query=pixar") %>%
+  httr::content()  %>%
+  pluck("results")
+
+id1 <- pluck(pixar_ids, 1, "id")
+id2 <- pluck(pixar_ids, 2, "id")
+
+id1
+id2
+
+
+```
+
+
+##### Write a query that will give you all the Pixar movies that have a runtime greater than an hour and sort them by descending revenue. The result will be given to you as a JSON (parsed to a list by {httr}). Convert this list to a tibble so you have one row per film and one column per interesting piece of information.
+
+```{r}
+library(magrittr)    
+
+
+pixar_movies <- httr::GET(str_glue("https://api.themoviedb.org/3/discover/movie?api_key=d436f8d39c81d5168448fed8476d32b2&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_companies={id1}&with_runtime.gte=60&sort_by=revenue.desc")) %>%
+  httr::content()  %>%
+  pluck("results") %>%
+  map_df(extract, c("original_title", "release_date", "vote_count"))
+
+pixar_movies
+
+```
