@@ -79,8 +79,8 @@ bound_data <-bind_rows(students_visualize, professors_visualize)
   ggplot(data= bound_data, 
        mapping=aes(x=type_of_response, 
                    y=answers,
-                   color=who)) + 
-  geom_bar(stat="identity", position = "dodge") + 
+                   fill=who)) + 
+  geom_bar(stat="identity", position = "dodge", ) + 
   scale_x_discrete(labels = c("Totally.agree", "Agree", "Disagree", "Totally.disagree")) +
   labs(title="My side-by-side facet chart",
        subtitle="Using facet to show each questions",
