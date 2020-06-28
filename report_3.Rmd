@@ -102,7 +102,6 @@ politicians_in_2000 <-
 unnest(mandates, active_years) %>%
   filter(active_years == 2000) %>%
   left_join(affilations, by = c("ID" = "MANDATE_ID")) %>%
-  select(PARTY, ASSEMBLY) %>%
   group_by(PARTY, ASSEMBLY) %>%
   summarise(sum = n())
 
