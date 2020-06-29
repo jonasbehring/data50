@@ -101,7 +101,7 @@ ggplot(data=by_postcode,
 
 ```
 
-Yes. They are more active in certain areas.
+Yes. They are more active in certain areas around Geneva.
 
 ### Part 4
 #### Create a more complex scatterplot, showing how price evolves with living space of the flat by postcode and by floor. You can use colors and/or facets to make the categories visible.
@@ -125,8 +125,33 @@ ggplot(rentals_scatterplot, aes(x=living_space, y=price, color=postcode)) +
 #### Can you see any trends for listings with addresses only available on demand? Are they more expensive or less? Bigger living space? Higher floor? Keep in mind that boxplot/violin plots work really well to compare distributions of values between groups!
 ```{r}
 
-rentals %>%
-  filter(str_detect(address, "Address on request") |   str_detect(address, "sur demande"))
+rentals <-
+  rentals %>%
+  mutate(on_request = case_when(
+    str_detect(address, "Address on request") | str_detect(address, "sur demande") ~ 1,
+    TRUE ~ 0)
+  )
 
+p1 <- ggplot(rentals, aes(x=living_space, y=price)) +
+  geom_point(mapping=aes(alpha=0.3, color=floor)) +
+  geom_point(data=filter(rentals, on_request==1),
+             shape=1, size=1, stroke=1, color="red") +
+             labs(title="How the price evolves with living space",
+                  x="living space in m2", y="price in CHF")
 
+p1
+
+p2 <- ggplot(rentals, aes(x=living_space, y=price, fill=price)) + 
+    geom_boxplot() +
+    facet_wrap(~on_request)
+
+p2
+
+p3 <- ggplot(rentals, aes(x=floor, y=living_space)) + 
+    geom_boxplot() +
+    facet_wrap(~on_request)
+
+p3
 ```
+
+Listings with an address on request seem to be a bit more exclusive (higher price and more living space) 

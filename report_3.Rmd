@@ -105,6 +105,12 @@ unnest(mandates, active_years) %>%
   group_by(PARTY, ASSEMBLY) %>%
   summarise(sum = n())
 
+ggplot(politicians_in_2000, aes(y=sum, x=PARTY)) +
+  geom_bar(stat="identity", position = "dodge") +
+  facet_wrap(~ASSEMBLY) + 
+  theme(legend.position = "none") +
+  coord_flip() 
+
 
 ```
 
@@ -207,6 +213,7 @@ unnest(mandates, active_years) %>%
   left_join(persons, by = c("PERSON_ID" = "ID")) %>%
   select(PERSON_ID, FIRSTNAME, LASTNAME, ASSEMBLY, StartDate, EndDate, sum, active_years) 
 
+active_mandates_per_person
 
 ```
 
