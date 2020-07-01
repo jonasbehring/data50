@@ -2,6 +2,9 @@
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(stringr)
+library(ggplot2)
+
 
 athletes <- read_excel("olympics.xlsx", sheet = "athletes")
 country <- read_excel("olympics.xlsx", sheet = "country")
@@ -22,6 +25,8 @@ country %>%
          differnet_countries = n_distinct(NOC)) %>%
   arrange(desc(differnet_countries)) 
 summary_athletes
+
+left_join(summary_athletes, athletes, by = c("athlete_id" = "ID")) 
 ```
 There are several athletes who have competed for different countries.
 
@@ -45,13 +50,25 @@ left_join(max_participations, athletes, by = c("athlete_id" = "ID")) %>%
 ### Part 3
 #### What athlete(s) kept a Gold medal for the longest time?
 ```{r}
+
 analysis <-
 medals %>%
   filter(Medal == "Gold") %>%
-  group_by(Event, athlete_id) %>%
-  summarise(gold_medals_per_athlete_event = n()) %>%
-  arrange(desc(gold_medals_per_athlete_event)) %>%
-  ungroup()
+  mutate(year = as.integer(str_extract(Games, "\\d{4}"))) %>%
+  distinct(athlete_id, Event, year) %>%
+  group_by(athlete_id, Event) %>%
+  arrange(year) %>%
+  mutate(lag = lag(year, 1),
+         diff = year-lag,
+         sum = n(),
+         calc1 = case_when((year - lag) != 4 ~ 1, 
+                             TRUE ~ 0),
+         cumsumcalc = cumsum(calc1),
+         count = n_distinct(cumsumcalc)) %>%
+  ungroup() %>%
+  arrange(desc(count)) 
+
+
 analysis
 ```
 
@@ -62,15 +79,23 @@ analysis
 analysis <-
 medals %>%
   filter(Medal == "Gold") %>%
-  group_by(Event) %>%
-  arrange(Event) %>%
-  mutate(test = "test")
-  #mutate(gold_medals_per_country_event = n()) %>%
-  #arrange(desc(gold_medals_per_country_event)) 
+  mutate(year = as.integer(str_extract(Games, "\\d{4}"))) %>%
+  distinct(Team, Event, year) %>%
+  group_by(Team, Event) %>%
+  arrange(year) %>%
+  mutate(lag = lag(year, 1),
+         diff = year-lag,
+         sum = n(),
+         calc1 = case_when((year - lag) != 4 ~ 1, 
+                             TRUE ~ 0),
+         cumsumcalc = cumsum(calc1),
+         count = n_distinct(cumsumcalc)) %>%
+  arrange(desc(count))
+
 analysis
 ```
 
-### Part 4
+### Part 5
 #### Who are the ten athletes that competed in the most events (some athletes take part in more than one event during games) ?
 
 ```{r}
@@ -85,5 +110,92 @@ medals %>%
 analysis
 ```
 
+### Part 6
+#### Create a new table showing the number of medals per country (rows) and per year (column). Keep only the 15 countries with the most medals overall.
 
+```{r}
+
+analysis <-
+medals %>%
+  filter(Medal == "Gold" | Medal == "Silver" | Medal == "Bronze") %>%
+  distinct(Team, Event, Games) %>%
+  mutate(year = as.integer(str_extract(Games, "\\d{4}"))) %>%
+  group_by(Team, year) %>%
+  summarise(sum = n()) %>%
+  group_by(Team) %>%
+  mutate(medals_overall = sum(sum)) %>%
+  tidyr::spread(key = "year",
+                value = "sum") %>%
+  arrange(desc(medals_overall)) %>%
+  top_n(15)
+
+analysis
+```
+
+### Part 7
+#### Create a scatterplot showing the average height and weight of competitors per sport (one dot per sport). Add labels with the sport names for:
+* the largest average height
+* the largest average weight
+* the smallest average height
+* the smallest average weight
+* the largest average BMI
+* the smallest average BMI
+
+```{r}
+part_7 <-
+medals %>%
+  left_join(athletes, by = c("athlete_id" = "ID")) %>%
+  filter(!is.na(Height) & !is.na(Weight)) %>%
+  mutate(bmi=Weight / ((Height/100)*(Height/100))) %>%
+  group_by(Sport) %>%
+  summarise(avg_height = mean(Height),
+            avg_weight = mean(Weight),
+            avg_bmi = mean(bmi)
+            )
+
+labels = summarise(part_7,
+                   max_avg_height = max((avg_height)),
+                   min_avg_height = min((avg_height)),
+                   max_avg_weight = max((avg_weight)),
+                   min_avg_weight = min((avg_weight)),
+                   max_avg_bmi = max((avg_bmi)),
+                   min_avg_bmi = min((avg_bmi)))
+
+part_7
+
+ggplot(part_7, aes(x=avg_height, y=avg_weight)) + 
+  geom_point(alpha=0.7)  +
+  geom_text(aes(label=ifelse(avg_height>=labels$max_avg_height,as.character(Sport),'')),hjust=0.55,vjust=1.5) +
+  geom_text(aes(label=ifelse(avg_weight>=labels$max_avg_weight,as.character(Sport),'')),hjust=0.55,vjust=1.5) +
+  geom_text(aes(label=ifelse(avg_bmi>=labels$max_avg_bmi,as.character(Sport),'')),hjust=0.55,vjust=1.5) +
+  geom_text(aes(label=ifelse(avg_height<=labels$min_avg_height,as.character(Sport),'')),hjust=0.4,vjust=1.5) +
+  geom_text(aes(label=ifelse(avg_weight<=labels$min_avg_weight,as.character(Sport),'')),hjust=0.55,vjust=1.5) +
+  geom_text(aes(label=ifelse(avg_bmi<=labels$min_avg_bmi,as.character(Sport),'')),hjust=0.55,vjust=1.5) 
+  
+```
+
+
+
+### Part 8
+#### Create a line plot showing the number of medals given by year (one line for Gold, one line for Silver and one line for Bronze). Does it change over time? Use facet to separate the medals at Summer games and Winter games.
+
+```{r}
+
+part_8 <-
+medals %>%
+  filter(Medal == "Gold" | Medal == "Silver" | Medal == "Bronze") %>%
+  group_by(Games, Medal) %>%
+  summarise(amount_of_medals = n()) %>%
+  mutate(year = as.integer(str_extract(Games, "\\d{4}")),
+         type = ifelse(str_detect(Games, "Summer"), "Summer games", "Winter games"))
+
+ggplot(part_8, aes(x=year, y=amount_of_medals, color=Medal)) + 
+  geom_line() +
+  labs(title="Medals per year",
+       x="year", y="medals") +
+  facet_wrap(~type) 
+
+```
+
+The amount of medal increases over time. Only after the first and after the second world war there was a decline in amount for the summer olympics.
 
