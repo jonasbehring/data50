@@ -99,7 +99,6 @@ Obtain a stacked horizontal bar plot with {ggplot2} that gives the percentage of
 ```{r}
 library(tidyr)
 
-#GATHER 
 percentages <-
 corrected_data %>%
   mutate(Percentage.students=100/Number.of.employees*Number.of.PhD.students,
